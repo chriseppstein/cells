@@ -1,5 +1,6 @@
 class CellsTestOneCell < Cell::Base
 
+  caches :super_state, :instance_view, :if => :ggg
   def super_state
     @my_class = self.class.to_s
     return

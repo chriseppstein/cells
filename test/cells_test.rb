@@ -1,4 +1,5 @@
-require File.dirname(__FILE__) + '/../../../../test/test_helper'
+require "~/Projects/caring.com/test/test_helper"
+require File.dirname(__FILE__) + '/../init'
 require File.dirname(__FILE__) + '/testing_helper'
 
 # this would usually happen by rails' autoloading -
@@ -315,4 +316,11 @@ class CellsTest < Test::Unit::TestCase
     assert_select HTML::Document.new(content).root, "div#linkTo"
   end
 
+end
+
+class TestTest < Cell::TestCase
+  def test_test
+    get :rendering_state
+    assert_select "div#RenderingView>span", /^yeah$/
+  end
 end

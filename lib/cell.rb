@@ -361,6 +361,17 @@ module Cell
       end
     end
     
+    class_inheritable_accessor :cache_states
+    
+    def self.caches(*states)
+      options = states.extract_options
+      self.cache_states ||= {}
+      states.inject(cache_states) do |mem, var|
+        mem[var] = options[:if] || true
+        mem
+      end
+    end
+    
     # Creates a cell instance of the class <tt>name</tt>Cell, passing through 
     # <tt>opts</tt>.
     def self.create_cell_for(controller, name, opts={})
