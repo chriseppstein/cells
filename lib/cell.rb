@@ -364,7 +364,7 @@ module Cell
     class_inheritable_accessor :cache_states
     
     def self.caches(*states)
-      options = states.extract_options
+      options = states.extract_options!
       self.cache_states ||= {}
       states.inject(cache_states) do |mem, var|
         mem[var] = options[:if] || true

@@ -51,6 +51,7 @@ module Cell
 
     def setup_controller
       @controller = TestController.new
+      @response = @controller.response
     end
     
     class TestController < ActionController::Base
