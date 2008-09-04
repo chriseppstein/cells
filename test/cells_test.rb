@@ -93,7 +93,6 @@ class CellsTest < Test::Unit::TestCase
 
 
   def test_controller_render_methods
-    puts "XXX test_controller_render_methods"
     get :call_render_cell_with_strings  # render_cell("test", "state")
     assert_response :success
     assert_tag :tag => "h9"
@@ -117,14 +116,12 @@ class CellsTest < Test::Unit::TestCase
   end
 
   def test_init
-    puts "XXX test_init"
     cell = TestCell.new(@controller, @my_path)
 
     assert cell.kind_of?(Cell::Base)
   end
 
   def test_render
-    puts "XXX test_render"
     ###@ cell = Cell::Registry[:test].new(@controller, @path)
     cell = TestCell.new(@controller, @path)
 
@@ -135,7 +132,6 @@ class CellsTest < Test::Unit::TestCase
   end
 
   def test_view_for_state_overwriting
-    puts "XXX test_view_for_state_overwriting"
 
     get :render_just_one_view_cell
     assert_response :success
@@ -143,7 +139,6 @@ class CellsTest < Test::Unit::TestCase
   end
 
   def test_reset_bug
-    puts "XXX test_reset_bug"
     get :render_reset_bug
 
     assert_response :success
@@ -151,7 +146,6 @@ class CellsTest < Test::Unit::TestCase
   end
 
   def test_bug_no_1
-    puts "XXX test_bug_1"
     get :render_view_with_render_cell_invocation
 
     ### FIXME: if this line is uncommented, we have bug #1 again:
@@ -199,7 +193,6 @@ class CellsTest < Test::Unit::TestCase
   end
 
   def test_state_view_existing_in_super_cell_view_directory
-    puts "XXX test_state_view_existing_in_super_cell_view_directory"
     cell_two = CellsTestTwoCell.new(@controller, nil)
     view_two = cell_two.render_state(:super_state)
 
@@ -222,7 +215,6 @@ class CellsTest < Test::Unit::TestCase
 
   ### API test (unit) -----------------------------------------------------------
   def test_cell_name
-    puts "XXX test_cell_name"
     cell_one = CellsTestOneCell.new(@controller, nil)
 
     assert_equal cell_one.cell_name, "cells_test_one"
@@ -230,7 +222,6 @@ class CellsTest < Test::Unit::TestCase
   end
 
   def test_cell_name_set_in_constructor
-    puts "XXX test_cell_name_set_in_constructor"
     cell_one = CellsTestOneCell.new(@controller, "sophisticated_extra_name")
 
     assert_equal cell_one.cell_name, "sophisticated_extra_name"
@@ -238,19 +229,16 @@ class CellsTest < Test::Unit::TestCase
   end
 
   def test_cell_name_suffix
-    puts "XXX test_cell_name_suffix"
     assert_equal Cell::Base.name_suffix, "_cell"
   end
 
   def test_class_from_cell_name
-    puts "XXX test_class_from_cell_name"
     assert_equal Cell::Base.class_from_cell_name("cells_test_one"), CellsTestOneCell
   end
 
   # currently UnknownCell resides in app/cells/, which sucks.
   def test_class_autoloading
     return unless Cell.engines_available?
-    puts "XXX test_class_autoloading"
     Dependencies.log_activity = true
 
     assert UnknownCell.new(@controller, nil) 
@@ -262,7 +250,6 @@ class CellsTest < Test::Unit::TestCase
   end
 
   def test_new_directory_hierarchy
-    puts "XXX test_new_directory_hierarchy"
     cell = ReallyModule::NestedCell.new(@controller)
     view = cell.render_state(:happy_state)
     @response.body = view
@@ -299,7 +286,6 @@ class CellsTest < Test::Unit::TestCase
   ### functional tests: ---------------------------------------------------------
 
   def test_link_to_in_view
-    puts "XXX test_link_to_in_view"
     get :render_state_with_link_to
 
     assert_response :success
@@ -307,7 +293,6 @@ class CellsTest < Test::Unit::TestCase
   end
 
   def ERROR_test_link_to_in_view
-    puts "XXX ERROR_test_link_to_in_view"
     @controller.params = {}
     @controller.send :initialize_current_url
 
