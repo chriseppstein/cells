@@ -219,7 +219,7 @@ module Cell
         @render_opts[:text]
       elsif s = @render_opts.delete(:state)
         render_view_for_state(s, @render_opts)
-      elsif @render_opts[:blank]
+      elsif @render_opts[:nothing]
         nil
       else
         render_view_for_state(state, @render_opts)
@@ -262,15 +262,16 @@ module Cell
         nil
       end
     end
-    
+
     # Render the current cell. With no options, or if not invoked,
     # the default render for the current state will be invoked.
     # Valid options:
     # :state - render the template associated with a different state -- does not execute that state.
     # :text - render a string as the contents of the cell.
-    # :blank - when set to true, renders nil. This makes it possible
-    #          for a cell to decide to not render and allow render chaining with short circuiting like so:
-    #          render_cell(:article, :recent) || render_cell(:blog_post, :recent)
+    # :nothing - when set to true, renders nil. This makes it possible
+    #            for a cell to decide to not render and allow the calling template to chain cells
+    #            together with short circuiting like so:
+    #            render_cell(:article, :recent) || render_cell(:blog_post, :recent)
     def render(options = {})
       raise double_render! if @render_opts
       @render_opts = options

@@ -80,7 +80,7 @@ module ReallyModule
       redirect_to :simple, :two_templates_state
     end
     def sad_state
-      render :blank => true
+      render :nothing => true
     end
   end
 end
