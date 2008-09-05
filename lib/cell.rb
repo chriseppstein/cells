@@ -207,8 +207,12 @@ module Cell
         action_view.render(options.merge(:file => "#{self.cell_name}/#{state}", :use_full_path => true))
       rescue ActionView::MissingTemplate
         ### TODO: introduce error method.
-        return "ATTENTION: cell view for #{cell_name}##{state} is not readable/existing.
-                Further on, your cell method did not return a String."
+        if RAILS_ENV == "development" || RAILS_ENV == "test"
+          return "ATTENTION: cell view for #{cell_name}##{state} is not readable/existing."
+        else
+          warn "ATTENTION: cell view for #{cell_name}##{state} is not readable/existing."
+          return nil
+        end
       end
     end
 
