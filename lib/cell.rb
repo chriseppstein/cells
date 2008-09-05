@@ -149,6 +149,7 @@ module Cell
       @controller = controller
       @cell_name  = cell_name ### TODO: currently we don't use this.
       @opts       = options
+      @render_opts = nil
       self.allow_forgery_protection = true
     end
 
@@ -177,13 +178,9 @@ module Cell
       state = state.to_s
       self.state_name = state
 
-      content = send(state)
+      send(state)
 
-      if content.class == String
-        return content
-      end
-
-      return self.render_view_for_state(state)
+      render_to_string(state)
     end
 
     # Render the view belonging to the given state.  This can be called
@@ -213,6 +210,20 @@ module Cell
           warn "ATTENTION: cell view for #{cell_name}##{state} is not readable/existing."
           return nil
         end
+      end
+    end
+    
+    def render_to_string(state)
+      @render_opts = {:state => state} if @render_opts.blank?
+      if @render_opts[:text]
+        @render_opts[:text]
+      elsif @render_opts[:state]
+        state = @render_opts.delete(:state)
+        render_view_for_state(state, @render_opts)
+      elsif @render_opts[:blank]
+        nil
+      else
+        raise render_error!("Cells does not know how to render #{@render_opts.inspect[1..-2]}")
       end
     end
 
@@ -251,6 +262,27 @@ module Cell
       else
         nil
       end
+    end
+    
+    # Render the current cell. With no options, or if not invoked,
+    # the default render for the current state will be invoked.
+    # Valid options:
+    # :state - render the template associated with a different state -- does not execute that state.
+    # :text - render a string as the contents of the cell.
+    # :blank - when set to true, renders nil. This makes it possible
+    #          for a cell to decide to not render and allow render chaining with short circuiting like so:
+    #          render_cell(:article, :recent) || render_cell(:blog_post, :recent)
+    def render(options = {})
+      raise double_render! if @render_opts
+      @render_opts = options
+    end
+
+    def double_render!
+      ActionController::DoubleRenderError.new(%q{render or redirect_to was called multiple times in this state. Please note that you may only call render/redirect_to at most once per state. Also note that neither render nor redirect_to terminate execution of the state, so if you want to exit after rendering, you need to do something like "render(...) and return"})
+    end
+    
+    def render_error!(msg = nil)
+      ActionController::RenderError.new(msg)
     end
 
     # Empty method.  Returns nil.  You can override this method

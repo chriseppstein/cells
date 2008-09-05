@@ -256,6 +256,11 @@ class CellsTest < Test::Unit::TestCase
 
     assert_select "#happyStateView"
   end
+  
+  def test_render_blank
+    cell = ReallyModule::NestedCell.new(@controller)
+    assert_nil cell.render_state(:sad_state)
+  end
 
   # Thanks to Fran Pena who made us aware of this bug and contributed a patch.
   def test_gettext_support
