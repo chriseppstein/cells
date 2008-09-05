@@ -36,11 +36,5 @@ class ActionView::Base
 
     return cell.render_state(state)
   end
-  
-
-  # Let the ActionView class know that this is being instantiated for cells.
-  # This is a hack, but it is required because the assumption that views are
-  # located in a 'views' directory is pretty much hardcoded in Rails.
-  attr_accessor :for_cells
 
 end
