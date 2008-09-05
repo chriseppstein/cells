@@ -13,10 +13,10 @@ module Cell
   #   render_cell :blog, :newest_article, {...}
   # - an instance of the class <tt>BlogCell</tt> is created, and a hash containing
   #   arbitrary parameters is passed
-  # - the <em>state method</em> <tt>newest_article</tt> is executed and assigns instance 
+  # - the <em>state method</em> <tt>newest_article</tt> is executed and assigns instance
   #   variables to be used in the view
   # - if the method returns a string, the cycle ends, rendering the string
-  # - otherwise, the corresponding <em>state view</em> is searched. 
+  # - otherwise, the corresponding <em>state view</em> is searched.
   #   Usually the cell will first look for a view template in
   #   <tt>app/cells/blog/newest_article.html. [erb|haml|...]</tt>
   # - after the view has been found, it is rendered and returned
@@ -73,7 +73,7 @@ module Cell
   # The use of partials is deprecated with cells, it is better to just
   # render a different state on the same cell (which also works recursively).
   #
-  # Anyway, <tt>render :partial </tt> in a cell view will work, if the 
+  # Anyway, <tt>render :partial </tt> in a cell view will work, if the
   # partial is contained in the cell's view directory.
   #
   # As can be seen above, Cells also can make use of helpers.  All Cells
@@ -138,13 +138,13 @@ module Cell
   class Base
     attr_accessor :controller
     attr_accessor :state_name
-    
+
     # Forgery protection for forms
     cattr_accessor :request_forgery_protection_token
     class_inheritable_accessor :allow_forgery_protection
     self.allow_forgery_protection = true
-    
-    
+
+
     def initialize(controller, cell_name=nil, options={})
       @controller = controller
       @cell_name  = cell_name ### TODO: currently we don't use this.
@@ -198,7 +198,7 @@ module Cell
       # Make helpers and instance vars available
       include_helpers_in_class(view_class)
       clone_ivars_to(action_view)
-      
+
       begin
         # path that is passed to finder.path_and_extension
         action_view.render(options.merge(:file => "#{self.cell_name}/#{state}", :use_full_path => true))
@@ -212,7 +212,7 @@ module Cell
         end
       end
     end
-    
+
     def render_to_string(state)
       @render_opts = {:state => state} if @render_opts.blank?
       if @render_opts[:text]
@@ -396,9 +396,9 @@ module Cell
     # This is a little scary, as Rails' internals are a mess
     include ActionController::Helpers
     include ActionController::RequestForgeryProtection
-    
+
     helper ApplicationHelper
-    
+
     # Declare a controller method as a helper.  For example,
     #   helper_method :link_to
     #   def link_to(name, options) ... end
@@ -412,9 +412,9 @@ module Cell
         end_eval
       end
     end
-    
+
     class_inheritable_accessor :cache_states
-    
+
     def self.caches(*states)
       options = states.extract_options!
       self.cache_states ||= {}
@@ -423,8 +423,8 @@ module Cell
         mem
       end
     end
-    
-    # Creates a cell instance of the class <tt>name</tt>Cell, passing through 
+
+    # Creates a cell instance of the class <tt>name</tt>Cell, passing through
     # <tt>opts</tt>.
     def self.create_cell_for(controller, name, opts={})
       class_from_cell_name(name).new(controller, name, opts)
