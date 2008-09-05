@@ -189,7 +189,7 @@ module Cell
     # Render the view belonging to the given state.  This can be called
     # from other states as well, when you need to render the same view file
     # from two states.
-    def render_view_for_state(state)
+    def render_view_for_state(state, options = {})
       view_class  = Class.new(ActionView::Base)
 
       # We cheat a little bit by providing the view class with a known-good views dir
@@ -203,7 +203,8 @@ module Cell
       clone_ivars_to(action_view)
       
       begin
-        action_view.render_file("#{self.cell_name}/#{state}", true) # path that is passed to finder.path_and_extension
+        # path that is passed to finder.path_and_extension
+        action_view.render(options.merge(:file => "#{self.cell_name}/#{state}", :use_full_path => true))
       rescue ActionView::MissingTemplate
         ### TODO: introduce error method.
         return "ATTENTION: cell view for #{cell_name}##{state} is not readable/existing.
