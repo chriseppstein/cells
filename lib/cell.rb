@@ -224,13 +224,14 @@ module Cell
     #
     # You can override the Cell::Base#view_for_state method for a particular
     # cell if you wish to make it decide dynamically what file to render.
+    # XXX This method is not called from anywhere!
     def find_view_file_for_state(action_view, state)
       ### DISCUSS: check for existence here?
       if view_file = view_for_state(state) # instance.  (not passing action_view)
-        return view_file
+        view_file
+      else
+        self.class.find_class_view_for_state(action_view, state)
       end
-
-      return self.class.find_class_view_for_state(action_view, state)
     end
 
     # Find the template for a cell's current state.  It tries to find a
