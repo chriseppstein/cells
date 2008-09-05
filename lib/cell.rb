@@ -214,16 +214,15 @@ module Cell
     end
 
     def render_to_string(state)
-      @render_opts = {:state => state} if @render_opts.blank?
+      @render_opts ||= {}
       if @render_opts[:text]
         @render_opts[:text]
-      elsif @render_opts[:state]
-        state = @render_opts.delete(:state)
-        render_view_for_state(state, @render_opts)
+      elsif s = @render_opts.delete(:state)
+        render_view_for_state(s, @render_opts)
       elsif @render_opts[:blank]
         nil
       else
-        raise render_error!("Cells does not know how to render #{@render_opts.inspect[1..-2]}")
+        render_view_for_state(state, @render_opts)
       end
     end
 
@@ -290,13 +289,9 @@ module Cell
       arguments << opts
       render :text => @controller.send(:instance_variable_get, "@template").render_cell(*arguments)
     end
-    
+
     def double_render!
       ActionController::DoubleRenderError.new(%q{render or redirect_to was called multiple times in this state. Please note that you may only call render/redirect_to at most once per state. Also note that neither render nor redirect_to terminate execution of the state, so if you want to exit after rendering, you need to do something like "render(...) and return"})
-    end
-    
-    def render_error!(msg = nil)
-      ActionController::RenderError.new(msg)
     end
 
     # Empty method.  Returns nil.  You can override this method
