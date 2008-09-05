@@ -150,6 +150,7 @@ module Cell
       @cell_name  = cell_name ### TODO: currently we don't use this.
       @opts       = options
       @render_opts = nil
+      @views = {}
       self.allow_forgery_protection = true
     end
 
@@ -187,21 +188,9 @@ module Cell
     # from other states as well, when you need to render the same view file
     # from two states.
     def render_view_for_state(state, options = {})
-      view_class  = Class.new(ActionView::Base)
-
-      # We cheat a little bit by providing the view class with a known-good views dir
-      action_view = view_class.new("#{RAILS_ROOT}/app/views", {}, @controller)
-
-      # Now override the finder in the view_class with our own (we can't use Rails' finder because it's braindead)
-      action_view.send(:instance_variable_set, '@finder', Cell::TemplateFinder.new(self, state, action_view))
-
-      # Make helpers and instance vars available
-      include_helpers_in_class(view_class)
-      clone_ivars_to(action_view)
-
       begin
         # path that is passed to finder.path_and_extension
-        action_view.render(options.merge(:file => "#{self.cell_name}/#{state}", :use_full_path => true))
+        action_view_template(state).render(options.merge(:file => "#{self.cell_name}/#{state}", :use_full_path => true))
       rescue ActionView::MissingTemplate
         ### TODO: introduce error method.
         if RAILS_ENV == "development" || RAILS_ENV == "test"
@@ -212,10 +201,29 @@ module Cell
         end
       end
     end
+    
+    def action_view_template(state)
+      @views[state.to_s] ||= begin
+        view_class  = Class.new(ActionView::Base)
+
+        # We cheat a little bit by providing the view class with a known-good views dir
+        returning(view_class.new("#{RAILS_ROOT}/app/views", {}, @controller)) do |action_view|
+          # Now override the finder in the view_class with our own (we can't use Rails' finder because it's braindead)
+          action_view.send(:instance_variable_set, '@finder', Cell::TemplateFinder.new(self, state, action_view))
+          action_view.send(:instance_variable_set, '@template', action_view)
+
+          # Make helpers and instance vars available
+          include_helpers_in_class(view_class)
+          clone_ivars_to(action_view)
+        end
+      end
+    end
 
     def render_to_string(state)
       @render_opts ||= {}
-      if @render_opts[:text]
+      if layout = @render_opts.delete(:layout)
+        render_layout(layout, state)
+      elsif @render_opts[:text]
         @render_opts[:text]
       elsif s = @render_opts.delete(:state)
         render_view_for_state(s, @render_opts)
@@ -224,6 +232,14 @@ module Cell
       else
         render_view_for_state(state, @render_opts)
       end
+    end
+
+    def render_layout(layout, state)
+      content = render_to_string(state)
+      avt = action_view_template(state)
+      avt.instance_variable_set("@content_for_layout", content)
+      layout = (layout == true) ? "#{self.cell_name}/layout" : "layouts/#{layout}"
+      avt.render(:file => layout, :use_full_path => true)
     end
 
     # Find the file that belongs to the state.  This first tries the cell's
@@ -272,6 +288,8 @@ module Cell
     #            for a cell to decide to not render and allow the calling template to chain cells
     #            together with short circuiting like so:
     #            render_cell(:article, :recent) || render_cell(:blog_post, :recent)
+    # :layout - when set to true, the content will be placed into a layout named "layout" in the cell directory,
+    #           when a string, the name represents a layout template in the app/cells/layouts directory.
     def render(options = {})
       raise double_render! if @render_opts
       @render_opts = options

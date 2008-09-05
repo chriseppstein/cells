@@ -48,11 +48,16 @@ module Cell
     # overridden anything from the plugin, so use it (unless we're testing plugins).
     def resolve_cells_path_and_extension(cell, state, type_ext)
       resolve_cell = cell.class
-      
+      subdirs = ["shared", "layouts"]
       while resolve_cell != Cell::Base
+        subdirs.unshift(resolve_cell.cell_name)
+        resolve_cell = resolve_cell.superclass
+      end
+      subdirs.each do |subdir|
         possible_cell_paths.each do |path|
-          template_handler_extensions.each do |ext|         
-            local_template_path = path_for_cell_template_with_type_extension(path, resolve_cell.cell_name, state, type_ext)
+          template_handler_extensions.each do |ext|
+            [resolve_cell.cell_name]
+            local_template_path = path_for_cell_template_with_type_extension(path, subdir, state, type_ext)
             #puts "trying #{local_template_path +'.'+ext}"   
             
             if File.exists?(local_template_path+'.'+ext)
@@ -60,7 +65,6 @@ module Cell
             end
           end
         end
-        resolve_cell = resolve_cell.superclass
       end
       return ["", ""]
     end
