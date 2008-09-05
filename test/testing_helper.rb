@@ -10,8 +10,17 @@ module CellsTestMethods
     @response   = ActionController::TestResponse.new
     @controller.request = @request
     @controller.response = @response
+    @response.template = new_action_view_template
+    @controller.instance_variable_set("@template", @response.template)
   end
   
+  def new_action_view_template
+    view_class  = Class.new(ActionView::Base)
+
+    # We cheat a little bit by providing the view class with a known-good views dir
+    action_view = view_class.new("#{RAILS_ROOT}/app/views", {}, @controller)
+  end
+
   def self.views_path
     File.dirname(__FILE__) + '/views/'
   end

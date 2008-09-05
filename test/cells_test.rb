@@ -76,6 +76,12 @@ module ReallyModule
     # view: cells/test/cells/really_module/nested_cell/happy_state.html.erb
     def happy_state
     end
+    def unhappy_state
+      redirect_to :simple, :two_templates_state
+    end
+    def sad_state
+      render :blank => true
+    end
   end
 end
 
@@ -255,6 +261,12 @@ class CellsTest < Test::Unit::TestCase
     @response.body = view
 
     assert_select "#happyStateView"
+  end
+  
+  def test_redirects
+    cell = ReallyModule::NestedCell.new(@controller)
+    view = cell.render_state(:unhappy_state)  
+    assert_match /Written using my own spiffy templating system/, view
   end
   
   def test_render_blank

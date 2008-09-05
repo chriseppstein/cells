@@ -277,6 +277,20 @@ module Cell
       @render_opts = options
     end
 
+    # Redirects to the another state of the current cell:
+    # redirect_to :alternate_state, :some => :options
+    #
+    # Or to another cell altogether.
+    # redirect_to :another_cell, :some_state, :some => :options
+    def redirect_to(*arguments)
+      opts = arguments.extract_options!
+      if arguments.size < 2
+        arguments.unshift cell_name
+      end
+      arguments << opts
+      render :text => @controller.send(:instance_variable_get, "@template").render_cell(*arguments)
+    end
+    
     def double_render!
       ActionController::DoubleRenderError.new(%q{render or redirect_to was called multiple times in this state. Please note that you may only call render/redirect_to at most once per state. Also note that neither render nor redirect_to terminate execution of the state, so if you want to exit after rendering, you need to do something like "render(...) and return"})
     end
