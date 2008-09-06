@@ -16,18 +16,31 @@ A cell class located in <tt>app/cells/article_cell.rb</tt> could look like this:
   class ArticleCell < Cell::Base
     helper :my_formatting_and_escaping_helper   # you can use helpers in cell views!
     
-    def newest
-      @articles = Article.get_newest
-      nil   # returning nil says "render the view named newest.html.[erb|haml|...]".
+    def show
+      @article = if params[:id]
+        Article.find(param[:id])
+      elsif params[:article]
+        params[:article]
+      else
+        Article.recent.first
+      end
+      # no call to render says "render the view named recent.html.[erb|haml|...]".
+    end
+
+    def recent
+      limit = params[:limit] || 3
+      @articles = Article.recent.all(:limit => limit)
+      # no call to render says "render the view named recent.html.[erb|haml|...]".
     end
     
     def top_article
       @article = Article.top_article
-      nil
+      render :state => :show
+      # uses the view for the :show state
     end
   end
 
-The corresponding views would be in <tt>app/cells/article/newest.html.erb</tt>:
+The corresponding views would be in <tt>app/cells/article/recent.html.erb</tt>:
 
   <h2>Hot stuff!</h2>
   <ul>
@@ -36,7 +49,7 @@ The corresponding views would be in <tt>app/cells/article/newest.html.erb</tt>:
   <% end %>
   </ul>
 
-The other view could be in <tt>app/cells/article/top_article.html.haml</tt>:
+The other view could be in <tt>app/cells/article/show.html.haml</tt>:
 
   %h2
     = @article.title
@@ -52,7 +65,7 @@ there could be an action
     end
   end
 
-where the rendered action view could be <tt>app/views/blog/top_page.html.erb</tt>:
+where the rendered action's layout could be <tt>app/layouts/blog.html.erb</tt>:
   
   <%= yield %>
   
