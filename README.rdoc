@@ -24,7 +24,7 @@ A cell class located in <tt>app/cells/article_cell.rb</tt> could look like this:
       else
         Article.recent.first
       end
-      # no call to render says "render the view named recent.html.[erb|haml|...]".
+      # no call to render says "render the view named show.html.[erb|haml|...]".
     end
 
     def recent
@@ -51,9 +51,8 @@ The corresponding views would be in <tt>app/cells/article/recent.html.erb</tt>:
 
 The other view could be in <tt>app/cells/article/show.html.haml</tt>:
 
-  %h2
-    = @article.title
-    = format_and_escape(@article.text)
+  %h2= @article.title
+  = format_and_escape(@article.text)
 
 You already know that from controllers, don't you? Speaking of controllers, here's
 how you could plug the cells into the page. In <tt>app/controllers/blog_controller.rb</tt>
@@ -89,7 +88,7 @@ tutorial.
 
 To install, simply cd to your rails app directory and run
 
-  script/plugin install git://github.com/apotonick/cells.git
+  script/plugin install git://github.com/joshuabates/cells.git
   
 Add the following line to your <tt>environment.rb</tt> file:
 
@@ -109,6 +108,8 @@ Cells will only work with trunk Engines or tags/rel_2.1.0
 http://svn.rails-engines.org/engines/tags/rel_2.1.0
 
 = LICENSE
+
+Copyright (c) 2008, Caring, Inc. by Christopher Eppstein and Joshua Bates
 
 Copyright (c) 2007-2008, Nick Sutterer
 
