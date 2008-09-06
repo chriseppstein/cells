@@ -29,7 +29,10 @@ class ActionView::Base
   #     <label>name: <input name="user[name]" /></label>
   #     <label>password: <input name="user[password]" /></label>
   #   </div>
-  def render_cell(name, state, opts = {})
+  def render_cell(*arguments)
+    opts = arguments.extract_options!
+    name, state = arguments
+    state ||= :show
     cell = Cell::Base.create_cell_for(@controller, name, opts)
 
     @controller.send :forget_variables_added_to_assigns   # this fixes bug #1, PARTLY.
