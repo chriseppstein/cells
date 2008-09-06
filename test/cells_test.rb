@@ -233,10 +233,6 @@ class CellsTest < Test::Unit::TestCase
     assert_equal CellsTestOneCell.cell_name, "cells_test_one"
   end
 
-  def test_cell_name_suffix
-    assert_equal Cell::Base.name_suffix, "_cell"
-  end
-
   def test_class_from_cell_name
     assert_equal Cell::Base.class_from_cell_name("cells_test_one"), CellsTestOneCell
   end

@@ -136,6 +136,7 @@ module Cell
   #
   # If gettext is set to DE_de, the latter view will be chosen.
   class Base
+    NAME_SUFFIX = "_cell"
     # Backwards Compatibility support.
     include Compatibility
     attr_accessor :controller
@@ -333,64 +334,8 @@ module Cell
       avt.render(:file => layout, :use_full_path => true)
     end
 
-    # Find the file that belongs to the state.  This first tries the cell's
-    # <tt>#view_for_state</tt> method and if that returns a true value, it
-    # will accept that value as a string and interpret it as a pathname for
-    # the view file. If it returns a falsy value, it will call the Cell's class
-    # method find_class_view_for_state to determine the file to check.
-    #
-    # You can override the Cell::Base#view_for_state method for a particular
-    # cell if you wish to make it decide dynamically what file to render.
-    # XXX This method is not called from anywhere!
-    def find_view_file_for_state(action_view, state)
-      ### DISCUSS: check for existence here?
-      if view_file = view_for_state(state) # instance.  (not passing action_view)
-        view_file
-      else
-        self.class.find_class_view_for_state(action_view, state)
-      end
-    end
-
-    # Find the template for a cell's current state.  It tries to find a
-    # template file with the name of the state under a subdirectory
-    # with the name of the cell under the <tt>app/cells</tt> directory.
-    # If this file cannot be found, it will try to call this method on
-    # the superclass.  This way you only have to write a state template
-    # once when a more specific cell does not need to change anything in
-    # that view.
-    # XXX This method is only called from a method that is not called from anywhere.
-    def self.find_class_view_for_state(action_view, state)
-      class_view_file = self.view_for_state(action_view, state)
-
-      if class_view_file && File.readable?(class_view_file) ### DISCUSS: check for existence here?
-        class_view_file
-      elsif superclass != Cell::Base  # Stop here
-        superclass.find_class_view_for_state(action_view, state)
-      else
-        nil
-      end
-    end
-
     def double_render!
       ActionController::DoubleRenderError.new(%q{render or redirect_to was called multiple times in this state. Please note that you may only call render/redirect_to at most once per state. Also note that neither render nor redirect_to terminate execution of the state, so if you want to exit after rendering, you need to do something like "render(...) and return"})
-    end
-
-    # Return the default view for the given state on this cell subclass.
-    # This is a file with the name of the state under a directory with the
-    # name of the cell followed by a template extension.
-    def self.view_for_state(action_view, state)
-      template_path = "app/cells/#{cell_name}/#{state}"
-      # Don't go through pick_template_extension because it will cache and
-      # this cache may interfere with actual views for controllers.
-      # XXX This will make Cells slower than normal views, so we may have to
-      # hack around this.
-      # XXX Still valid?
-      begin
-        Template.new(self, template_path, true, {}).set_extension_and_filename
-#      rescue MissingTemplate
-      end
-      puts "TRYING: #{template_path} returns #{action_view.finder.file_exists?(template_path).inspect}"
-      return action_view.finder.file_exists?(template_path) && template_path
     end
 
     # Get the name of this cell's class as an underscored string,
@@ -400,13 +345,7 @@ module Cell
     #  UserCell.cell_name
     #  => "user"
     def self.cell_name
-      self.name.underscore.sub(/#{name_suffix}/, '')
-    end
-
-    # The name suffix of a cell.  Always '_cell'.
-    def self.name_suffix
-      # XXX Why is this needed?  Seems like superfluous "abstraction"
-      '_cell'
+      self.name.underscore.sub(/#{NAME_SUFFIX}/, '')
     end
 
     # Given a cell name, find the class that belongs to it.
@@ -415,15 +354,7 @@ module Cell
     # Cell::Base.class_from_cell_name(:user)
     # => UserCell
     def self.class_from_cell_name(cell_name)
-      "#{cell_name}#{name_suffix}".classify.constantize
-    end
-
-    # Render the given view file to a string.  This will
-    # make the helpers defined using Cell::Base#helper available
-    # from that view and copy the instance variables from the
-    # Cell to the view.
-    # XXX Not called from anywhere!
-    def render_string_from_view(view_file)
+      "#{cell_name}#{NAME_SUFFIX}".classify.constantize
     end
 
     # When passed a copy of the ActionView::Base class, it
