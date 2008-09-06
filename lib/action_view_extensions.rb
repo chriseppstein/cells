@@ -37,7 +37,7 @@ class ActionView::Base
 
     @controller.send :forget_variables_added_to_assigns   # this fixes bug #1, PARTLY.
 
-    return cell.render_state(state)
+    return cell.send(:render_state, state)
   end
 
 end

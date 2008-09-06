@@ -22,7 +22,7 @@ module Cell
     
     def get(state, params={})
       cell = Cell::Base.create_cell_for(@controller, self.class.cell_class.name.underscore, params)
-      @controller.response.body = cell.render_state(state)
+      @controller.response.body = cell.send(:render_state, state)
     end
 
     class << self

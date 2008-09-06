@@ -17,7 +17,7 @@ module Cell
     def path_and_extension(path)
       ### FIXME: shouldn't this be a call to Cell::Base#find_view_file_for_state ?
       # First check if the cell forces some explicit file for current state.
-      state_view = @cell.view_for_state(@state)
+      state_view = @cell.send(:view_for_state, @state)
       
       #puts "#path_and_extension: #{path}"
       

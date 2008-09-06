@@ -131,9 +131,8 @@ class CellsTest < Test::Unit::TestCase
     ###@ cell = Cell::Registry[:test].new(@controller, @path)
     cell = TestCell.new(@controller, @path)
 
-    assert_equal cell.render_state("direct_output").class, String
-    #assert_equal cell.render_state("rendering_state").class, String
-    assert_raises (NoMethodError) { cell.render_state("non_existing_state") }
+    assert_equal render_cell_state(cell, "direct_output").class, String
+    assert_raises (NoMethodError) { render_cell_state(cell, "non_existing_state") }
 
   end
 
@@ -165,20 +164,20 @@ class CellsTest < Test::Unit::TestCase
   def test_not_existing_partial
     t = MyTestCell.new(@controller)
     assert_raises ActionView::TemplateError do
-      t.render_state(:view_containing_nonexistant_partial)
+      render_cell_state(t, :view_containing_nonexistant_partial)
     end
   end
   
   def test_broken_partial
     t = MyTestCell.new(@controller)
     assert_raises ActionView::TemplateError do
-      t.render_state(:view_containing_broken_partial)
+      render_cell_state(t, :view_containing_broken_partial)
     end
   end
   
   def test_render_partial_in_state_view
     t = MyTestCell.new(@controller)
-    c = t.render_state(:view_containing_partial)
+    c = render_cell_state(t, :view_containing_partial)
     assert_selekt c, "#partialContained>#partial"
   end
   
@@ -187,34 +186,34 @@ class CellsTest < Test::Unit::TestCase
   # view for :instance_view is provided directly by #view_for_state.
   def test_view_for_state
     t = CellsTestOneCell.new(@controller)
-    c = t.render_state(:instance_view)
+    c = render_cell_state(t, :instance_view)
     assert_selekt c, "#renamedInstanceView"
   end
 
   def test_state_view_existing_in_my_view_directory
     cell_one = CellsTestOneCell.new(@controller, nil)
-    view_one = cell_one.render_state(:super_state)
+    view_one = render_cell_state(cell_one, :super_state)
 
     assert_selekt view_one, "p#superStateView", "CellsTestOneCell"
   end
 
   def test_state_view_existing_in_super_cell_view_directory
     cell_two = CellsTestTwoCell.new(@controller, nil)
-    view_two = cell_two.render_state(:super_state)
+    view_two = render_cell_state(cell_two, :super_state)
 
     assert_selekt view_two, "p#superStateView", "CellsTestTwoCell"
   end
 
   def test_state_view_not_existing
     cell_one = CellsTestOneCell.new(@controller, nil)
-    view_one = cell_one.render_state(:state_with_no_view)
+    view_one = render_cell_state(cell_one, :state_with_no_view)
 
     assert_match /ATTENTION/, view_one
   end
 
   def test_templating_systems
     simple_cell = SimpleCell.new(@controller, nil)
-    simple_view = simple_cell.render_state(:two_templates_state)
+    simple_view = render_cell_state(simple_cell, :two_templates_state)
 
     assert_match /Written using my own spiffy templating system/, simple_view
   end
@@ -257,7 +256,7 @@ class CellsTest < Test::Unit::TestCase
 
   def test_new_directory_hierarchy
     cell = ReallyModule::NestedCell.new(@controller)
-    view = cell.render_state(:happy_state)
+    view = render_cell_state(cell, :happy_state)
     @response.body = view
 
     assert_select "#happyStateView"
@@ -265,13 +264,13 @@ class CellsTest < Test::Unit::TestCase
   
   def test_redirects
     cell = ReallyModule::NestedCell.new(@controller)
-    view = cell.render_state(:unhappy_state)  
+    view = render_cell_state(cell, :unhappy_state)  
     assert_match /Written using my own spiffy templating system/, view
   end
   
   def test_render_blank
     cell = ReallyModule::NestedCell.new(@controller)
-    assert_nil cell.render_state(:sad_state)
+    assert_nil render_cell_state(cell, :sad_state)
   end
 
   # Thanks to Fran Pena who made us aware of this bug and contributed a patch.
@@ -279,7 +278,7 @@ class CellsTest < Test::Unit::TestCase
     ### FIXME: how to set "en" as gettext's default language?
     
     t = MyTestCell.new(@controller)
-    c = t.render_state(:view_with_explicit_english_translation)
+    c = render_cell_state(t, :view_with_explicit_english_translation)
     
     # the view "view_with_explicit_english_translation_en" exists, check if
     # gettext/rails found it:
@@ -296,7 +295,7 @@ class CellsTest < Test::Unit::TestCase
     
     
     t = MyTestCell.new(@controller)
-    c = t.render_state(:view_in_local_test_views_dir)
+    c = render_cell_state(t, :view_in_local_test_views_dir)
     assert_selekt c, "#localView"
   end
   
@@ -314,10 +313,13 @@ class CellsTest < Test::Unit::TestCase
     @controller.send :initialize_current_url
 
     cell = TestCell.new(@controller, nil)
-    content = cell.render_state(:state_with_link_to)
+    content = render_cell_state(cell, :state_with_link_to)
     assert_select HTML::Document.new(content).root, "div#linkTo"
   end
 
+  def render_cell_state(cell, state)
+    cell.send(:render_state, state)
+  end
 end
 
 class TestTest < Cell::TestCase

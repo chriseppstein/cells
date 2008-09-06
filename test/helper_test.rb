@@ -17,7 +17,7 @@ class CellsHelperTest < Test::Unit::TestCase
   def test_helper
     cell = HelperUsingCell.new(@controller)
 
-    content = cell.render_state(:state_with_helper_invocation)
+    content = render_cell_state(cell, :state_with_helper_invocation)
     assert_selekt content, "p#stateWithHelperInvocation", "mysterious"
   end
   
@@ -26,23 +26,23 @@ class CellsHelperTest < Test::Unit::TestCase
     return unless Cell.engines_available?
     cell = HelperUsingCell.new(@controller)
 
-    content = cell.render_state(:state_with_automatic_helper_invocation)
+    content = render_cell_state(cell, :state_with_automatic_helper_invocation)
     assert_selekt content, "p#stateWithAutomaticHelperInvocation", "automatic"
   end
 
   def test_helper_method
     cell = HelperUsingCell.new(@controller)
 
-    content = cell.render_state(:state_with_helper_method_invocation)
+    content = render_cell_state(cell, :state_with_helper_method_invocation)
     assert_selekt content, "p#stateWithHelperMethodInvocation", "helped by a method"
   end
 
   def test_helper_with_subclassing
     subclassedcell = HelperUsingSubCell.new(@controller)
-    content = subclassedcell.render_state(:state_with_helper_invocation)
+    content = render_cell_state(subclassedcell, :state_with_helper_invocation)
     assert_selekt content, "p#stateWithHelperInvocation", "mysterious"
 
-    content = subclassedcell.render_state(:another_state_with_helper_invocation)
+    content = render_cell_state(subclassedcell, :another_state_with_helper_invocation)
     assert_selekt content, "p#stateWithHelperInvocation", "mysterious"
   end
 
@@ -50,7 +50,7 @@ class CellsHelperTest < Test::Unit::TestCase
     # this cell includes a helper, and uses it:
     cell = HelperUsingCell.new(@controller)
 
-    content = cell.render_state(:state_with_helper_invocation)
+    content = render_cell_state(cell, :state_with_helper_invocation)
     assert_selekt content, "p#stateWithHelperInvocation", "mysterious"
 
     # this cell doesn't include the helper, but uses it anyway, which should
@@ -60,7 +60,7 @@ class CellsHelperTest < Test::Unit::TestCase
 
 #    assert_raises (NameError) do
      assert_raises (ActionView::TemplateError) do
-      cell.render_state(:state_with_not_included_helper_method)
+      render_cell_state(cell, :state_with_not_included_helper_method)
     end
   end
   
@@ -68,10 +68,10 @@ class CellsHelperTest < Test::Unit::TestCase
   def test_helpers_included_on_different_inheritance_levels
     cell = TwoHelpersIncludingCell.new(@controller)
 
-    c = cell.render_state(:state_with_helper_invocation)
+    c = render_cell_state(cell, :state_with_helper_invocation)
     assert_selekt c, "p#stateWithHelperInvocation", "mysterious"
     
-    c = cell.render_state(:state_using_another_helper)
+    c = render_cell_state(cell, :state_using_another_helper)
     assert_selekt c, "p#stateUsingAnotherHelper", "senseless"
   end
   
@@ -79,8 +79,11 @@ class CellsHelperTest < Test::Unit::TestCase
   def test_application_helper
     cell = HelperUsingCell.new(@controller)
 
-    c = cell.render_state(:state_using_application_helper)
+    c = render_cell_state(cell, :state_using_application_helper)
     assert_selekt c, "p#stateUsingApplicationHelper", "global"
+  end
+  def render_cell_state(cell, state)
+    cell.send(:render_state, state)
   end
 end
 
