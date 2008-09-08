@@ -305,6 +305,8 @@ module Cell
           # Now override the finder in the view_class with our own (we can't use Rails' finder because it's braindead)
           add_cell_paths_to_finder(action_view.send(:instance_variable_get, '@finder'))
           action_view.send(:instance_variable_set, '@template', action_view)
+          action_view.send(:instance_variable_set, '@cell', self)
+          action_view.extend(Cell::View)
           # Make helpers and instance vars available
           include_helpers_in_class(view_class)
           clone_ivars_to(action_view)
