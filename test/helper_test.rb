@@ -42,6 +42,7 @@ class CellsHelperTest < Test::Unit::TestCase
     content = render_cell_state(subclassedcell, :state_with_helper_invocation)
     assert_selekt content, "p#stateWithHelperInvocation", "mysterious"
 
+    subclassedcell = HelperUsingSubCell.new(@controller)
     content = render_cell_state(subclassedcell, :another_state_with_helper_invocation)
     assert_selekt content, "p#stateWithHelperInvocation", "mysterious"
   end
@@ -124,10 +125,6 @@ class HelperUsingCell < Cell::Base
   
   def state_using_application_helper
   end
-  
-  def view_for_state(state)
-    CellsTestMethods.views_path + "#{state}.html.erb"
-  end
 
 protected
 
@@ -149,9 +146,6 @@ end
 
 class HelperUsingSubCell < HelperUsingCell
   def another_state_with_helper_invocation
-  end
-
-  def view_for_state(state)
-    CellsTestMethods.views_path + "state_with_helper_invocation.html.erb"
+    render :state => 'state_with_helper_invocation'
   end
 end

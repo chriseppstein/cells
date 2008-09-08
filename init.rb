@@ -26,8 +26,7 @@
 require 'cell'
 require 'cell_extensions'
 require 'action_view_extensions'
-require 'cell/template_finder'
-require 'cell/test_case'
+require 'cell/test_case' if RAILS_ENV == 'test'
 
 ActionController::Base.class_eval do
   include Cell::ControllerMethods

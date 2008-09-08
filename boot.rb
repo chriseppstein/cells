@@ -1,3 +1,4 @@
+require File.join(File.dirname(__FILE__),'lib', 'cell')
 #--
 ### DISCUSS: move this to cell_extensions.
 #--
@@ -36,7 +37,7 @@ Rails::Configuration.class_eval do
   # load application cells not defined in a plugin.
   # extend rails' default_load_paths - which eventually get it to autoloading into Dependencies.load_paths.
   def default_load_paths_with_railsroot_cells
-    default_load_paths_without_railsroot_cells.concat([RAILS_ROOT+'/app/cells'])
+    default_load_paths_without_railsroot_cells.concat([File.join(RAILS_ROOT, Cell::CELL_DIR)])
   end
   
   # Without Engines, ActiveSupport::alias_method_chain isn't available

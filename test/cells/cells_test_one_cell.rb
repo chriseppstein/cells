@@ -11,11 +11,12 @@ class CellsTestOneCell < Cell::Base
 
   def view_for_state(state)
     if state.to_s == 'instance_view'
-      return File.dirname(__FILE__) + '/cells_test_one/renamed_instance_view.html.erb'
+      'renamed_instance_view'
     end
   end
 
   def state_with_no_view
+    render :nothing => true
   end
 
 end

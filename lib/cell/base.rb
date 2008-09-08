@@ -282,11 +282,13 @@ module Cell
     def render_view_for_state(state, options = {})
       begin
         # path that is passed to finder.path_and_extension
-        action_view_template(state).render(options.merge(:file => "#{self.cell_name}/#{state}", :use_full_path => true))
+        action_view_template(state).render(options.merge(:file => state.to_s, :use_full_path => true))
       rescue ActionView::MissingTemplate
         ### TODO: introduce error method.
-        if RAILS_ENV == "development" || RAILS_ENV == "test"
+        if RAILS_ENV == "development"
           return "ATTENTION: cell view for #{cell_name}##{state} is not readable/existing."
+        elsif RAILS_ENV == "test"
+          raise
         else
           warn "ATTENTION: cell view for #{cell_name}##{state} is not readable/existing."
           return nil
@@ -301,9 +303,8 @@ module Cell
         # We cheat a little bit by providing the view class with a known-good views dir
         returning(view_class.new("#{RAILS_ROOT}/app/views", {}, @controller)) do |action_view|
           # Now override the finder in the view_class with our own (we can't use Rails' finder because it's braindead)
-          action_view.send(:instance_variable_set, '@finder', Cell::TemplateFinder.new(self, state, action_view))
+          add_cell_paths_to_finder(action_view.send(:instance_variable_get, '@finder'))
           action_view.send(:instance_variable_set, '@template', action_view)
-
           # Make helpers and instance vars available
           include_helpers_in_class(view_class)
           clone_ivars_to(action_view)
@@ -322,7 +323,7 @@ module Cell
       elsif @render_opts[:nothing]
         nil
       else
-        render_view_for_state(state, @render_opts)
+        render_view_for_state(view_for_state(state) || state, @render_opts)
       end
     end
 
@@ -355,6 +356,45 @@ module Cell
     # => UserCell
     def self.class_from_cell_name(cell_name)
       "#{cell_name}#{NAME_SUFFIX}".classify.constantize
+    end
+
+    def add_cell_paths_to_finder(finder)
+      paths = []
+      possible_cell_paths.each do |cell_path|
+        possible_cell_subdirectories.each do |subdir|
+          paths << File.join(cell_path, subdir)
+        end
+        paths << cell_path
+      end
+      finder.prepend_view_path paths
+    end
+    
+    # returns a list of subdirectories in order that should be searched under app/cells
+    # this is derived from the cell names of the current cell and all
+    # its superclasses up to Cell::Base. and then adds 'shared'.
+    def possible_cell_subdirectories
+      @possible_cell_subdirectories ||= begin
+        resolve_cell = self.class
+        subdirs = []
+        while resolve_cell != Cell::Base
+          subdirs << resolve_cell.to_s.underscore[0..-6]
+          resolve_cell = resolve_cell.superclass
+        end
+        subdirs + ["shared"]
+      end
+    end
+
+    # To see if the template can be found, make list of possible cells paths, according
+    # to:
+    # If Engines loaded: then append paths in order so that more recently started plugins 
+    # will take priority and RAILS_ROOT/app/cells with highest prio.
+    # Engines not-loaded: then only RAILS_ROOT/app/cells
+    def possible_cell_paths
+      if Cell.engines_available?
+        Rails.plugins.by_precedence.map {|plugin| File.join(plugin.directory, Cell::CELL_DIR)}.unshift(File.join(RAILS_ROOT, Cell::CELL_DIR))
+      else
+        [File.join(RAILS_ROOT, Cell::CELL_DIR)]
+      end
     end
 
     # When passed a copy of the ActionView::Base class, it

@@ -39,7 +39,7 @@ class JustOneViewCell < Cell::Base
   end
 
   def view_for_state(state)
-    CellsTestMethods.views_path + "just_one_view.html.erb"
+    "just_one_view"
   end
 end
 
@@ -85,18 +85,16 @@ module ReallyModule
   end
 end
 
+class Cell::Base
+  # normally #possible_cell_paths points to "app/cells" or, with engines, additionally
+  # to "vendor/plugins/*/app/cells".
+  def possible_cell_paths
+    [File.dirname(__FILE__) + '/cells']
+  end
+end
 
 class CellsTest < Test::Unit::TestCase
   include CellsTestMethods
-  
-  # normally #possible_cell_paths points to "app/cells" or, with engines, additionally
-  # to "vendor/plugins/*/app/cells".
-  Cell::TemplateFinder.class_eval do
-    def possible_cell_paths
-      File.dirname(__FILE__) + '/cells'
-    end
-  end
-
 
   def test_controller_render_methods
     get :call_render_cell_with_strings  # render_cell("test", "state")
@@ -202,13 +200,6 @@ class CellsTest < Test::Unit::TestCase
     view_two = render_cell_state(cell_two, :super_state)
 
     assert_selekt view_two, "p#superStateView", "CellsTestTwoCell"
-  end
-
-  def test_state_view_not_existing
-    cell_one = CellsTestOneCell.new(@controller, nil)
-    view_one = render_cell_state(cell_one, :state_with_no_view)
-
-    assert_match /ATTENTION/, view_one
   end
 
   def test_templating_systems

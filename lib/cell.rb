@@ -14,4 +14,7 @@ module Cell
     :status => 'alpha',
     :string => "1.3.0-alpha"
   }
+
+  CELL_DIR = 'app/cells'
+
 end

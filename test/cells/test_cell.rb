@@ -1,9 +1,5 @@
 class TestCell < Cell::Base
 
-  def view_for_state(state)    
-    RAILS_ROOT+"/vendor/plugins/cells/test/views/#{state}.html.erb"
-  end
-
   def direct_output
     render :text => "<h9>this state method doesn't render a template but returns a string, which is great!</h9>"
   end
