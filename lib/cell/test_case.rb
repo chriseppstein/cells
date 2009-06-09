@@ -21,7 +21,7 @@ module Cell
     @@cell_class = nil
 
     def get(state, params={})
-      cell = Cell::Base.create_cell_for(@controller, self.class.cell_class.name.underscore, params)
+      cell = Cell::Base.create_cell_for(@controller, self.class.cell_class_name, params)
       @controller.response.body = cell.send(:render_state, state)
     end
 
@@ -40,6 +40,10 @@ module Cell
         else
           self.cell_class = determine_default_cell_class(name)
         end
+      end
+      
+      def cell_class_name
+        cell_class.name.gsub('Cell','').underscore
       end
 
       def determine_default_cell_class(name)
