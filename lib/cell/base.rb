@@ -199,8 +199,13 @@ module Cell
     # :layout - when set to true, the content will be placed into a layout named "layout" in the cell directory,
     #           when a string, the name represents a layout template in the app/cells/layouts directory.
     def render(options = {})
-      raise double_render! if @render_opts
+      raise double_render! if rendered?
       @render_opts = options
+    end
+
+    # Asks if the cell has rendered yet.
+    def rendered?
+      !!@render_opts
     end
 
     # Redirects to the another state of the current cell:
@@ -209,7 +214,18 @@ module Cell
     # Or to another cell altogether.
     # redirect_to :another_cell, :some_state, :some => :options
     def redirect_to(*arguments)
-      render :text => render_cell(*arguments)
+      unless try_redirecting_to(*arguments)
+        render :nothing => true
+      end
+    end
+
+    # tries to redirect, but should that cell state render nothing,
+    # then no rendering occurs
+    def try_redirecting_to(*arguments)
+      unless (cell_text = render_cell(*arguments)).blank?
+        render :text => cell_text
+        true
+      end
     end
 
     def render_cell(*arguments)
