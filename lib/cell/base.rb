@@ -262,11 +262,24 @@ module Cell
       options = states.extract_options!
       self.cache_states ||= {}
       states.inject(cache_states) do |mem, var|
-        mem[var] = options[:if] || true
+        mem[var] = case
+          when options[:if] then options[:if]
+          when options[:except] then caching_except_proc(states.first, options)
+          else true
+        end
         mem
       end
     end
 
+    def self.caching_except_proc(state, options)
+      except = lambda { |p| [options[:except]].flatten.include? p[:state] }
+      case state
+        when :all then lambda { |p| !except.call(p) }
+        when :none then lambda { |p| except.call(p) }
+        else true
+      end
+    end
+    
     # Creates a cell instance of the class <tt>name</tt>Cell, passing through
     # <tt>opts</tt>.
     def self.create_cell_for(controller, name, opts={})
@@ -274,6 +287,7 @@ module Cell
     end
 
     protected
+    
     # Empty method.  Returns nil.  You can override this method
     # in individual cell classes if you want them to determine the
     # view file dynamically.
@@ -440,5 +454,9 @@ module Cell
       ['@controller', '@_already_rendered']
     end
 
+    def current_method
+      caller[0] =~ /`([^']*)'/ and $1
+    end
+    
   end
 end

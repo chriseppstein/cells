@@ -11,7 +11,7 @@ module Cell
     class NotCacheable < ArgumentError; end
 
     def render_state_with_caching(state)
-      unless perform_caching?(state, params) then return render_state_without_caching(state); end
+      unless perform_caching?(state, params.merge(:state => state)) then return render_state_without_caching(state); end
       begin
         key = cache_key(self.class.name, state, params)
         cache = @controller.read_fragment(key)
