@@ -143,6 +143,10 @@ module Cell
     attr_accessor :state_name
     attr_reader :cell_name
 
+    # adds layout to cells
+    class_inheritable_accessor :cell_layout
+    self.cell_layout = nil
+    
     # Forgery protection for forms
     cattr_accessor :request_forgery_protection_token
     class_inheritable_accessor :allow_forgery_protection
@@ -185,6 +189,10 @@ module Cell
     # This will break caching and make your cell less re-usable.
     def request
       @controller.request
+    end
+    
+    def self.layout(template)
+      self.cell_layout = template
     end
 
     # Render the current cell. With no options, or if not invoked,
@@ -348,9 +356,9 @@ module Cell
       end
     end
 
-    def render_to_string(state)
+    def render_to_string(state, no_layout = false)
       @render_opts ||= {}
-      if layout = @render_opts.delete(:layout)
+      if !no_layout && layout = detect_cell_layout
         render_layout(layout, state)
       elsif @render_opts[:text]
         @render_opts[:text].to_s
@@ -362,9 +370,17 @@ module Cell
         render_view_for_state(view_for_state(state) || state, @render_opts)
       end
     end
+    
+    def detect_cell_layout
+      if @render_opts.has_key? :layout
+        @render_opts.delete(:layout) || nil
+      else
+        self.class.cell_layout
+      end
+    end
 
     def render_layout(layout, state)
-      content = render_to_string(state)
+      content = render_to_string(state, true)
       avt = action_view_template(state)
       avt.instance_variable_set("@content_for_layout", content)
       layout = (layout == true) ? "#{self.cell_name}/layout" : "layouts/#{layout}"
