@@ -1,34 +1,40 @@
 module Cell
   module Caching
+    
     def self.enabled=(enabled)
       Cell::Base.send(:include, Cell::Caching) if enabled
+      Cell::Base.class_eval do
+        alias_method_chain :render_state, :caching
+      end
     end
 
-    class NotCacheable < ArgumentException; end
+    class NotCacheable < ArgumentError; end
 
-    def perform_caching?(state, params={})
-      should_cache = self.class.cache_states[state]
-      should_cache = should_cache.call(params) if should_cache.is_a? Proc
-      return false unless should_cache
-      @controller.perform_caching
-    end
-
-    def render_state_with_caching(state, params={})
+    def render_state_with_caching(state)
       unless perform_caching?(state, params) then return render_state_without_caching(state); end
       begin
-         key = cache_key(widget, params)
-         cache = @controller.read_fragment(key)
-         return cache unless cache.blank?
-         @controller.write_fragment(key, render_state_without_caching(state))
-       rescue Cell::Caching::NotCacheable
-         logger.info("Warning: Can't cache: #{state} with params: #{params.inspect}")
-         return render_state_without_caching(state)
-       end
+        key = cache_key(self.class.name, state, params)
+        cache = @controller.read_fragment(key)
+        return cache unless cache.blank?
+        @controller.write_fragment(key, render_state_without_caching(state))
+      rescue Cell::Caching::NotCacheable
+        Rails.logger.info("Warning: Can't cache: #{state} with params: #{params.inspect}")
+        return render_state_without_caching(state)
+      end
     end
 
-    alias_method_chain :render_state, :caching
-
     private
+    
+    def perform_caching?(state, params={})
+      return false if perform_caching_for_state?(:none, params)
+      return false unless perform_caching_for_state?(state, params) || perform_caching_for_state?(:all, params)
+      @controller.perform_caching
+    end
+    
+    def perform_caching_for_state?(state, params)
+      should_cache = self.class.cache_states[state]
+      should_cache.is_a?(Proc) ? should_cache.call(params) : should_cache
+    end
 
     # The params can be numbers, strings, symbols, or arrays of active records
     def cache_key(cell, state, params)
