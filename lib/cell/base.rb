@@ -373,7 +373,7 @@ module Cell
     
     # returns a list of subdirectories in order that should be searched under app/cells
     # this is derived from the cell names of the current cell and all
-    # its superclasses up to Cell::Base. and then adds 'shared'.
+    # its superclasses up to Cell::Base. and then adds 'layouts' and 'shared'.
     def possible_cell_subdirectories
       @possible_cell_subdirectories ||= begin
         resolve_cell = self.class
