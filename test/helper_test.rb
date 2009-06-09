@@ -8,19 +8,19 @@ require File.dirname(__FILE__) + '/cells/test_cell'
 
 class CellsHelperTest < Test::Unit::TestCase
   include CellsTestMethods
-  
+
   def self.path_to_test_views
     RAILS_ROOT + "/vendor/plugins/cells/test/views/"
   end
-  
-  
+
+
   def test_helper
     cell = HelperUsingCell.new(@controller)
 
     content = render_cell_state(cell, :state_with_helper_invocation)
     assert_selekt content, "p#stateWithHelperInvocation", "mysterious"
   end
-  
+
   # currently HelperUsingCellHelper resides in app/helpers/, which sucks.
   def test_auto_helper
     return unless Cell.engines_available?
@@ -64,19 +64,19 @@ class CellsHelperTest < Test::Unit::TestCase
       render_cell_state(cell, :state_with_not_included_helper_method)
     end
   end
-  
-  
+
+
   def test_helpers_included_on_different_inheritance_levels
     cell = TwoHelpersIncludingCell.new(@controller)
 
     c = render_cell_state(cell, :state_with_helper_invocation)
     assert_selekt c, "p#stateWithHelperInvocation", "mysterious"
-    
+
     c = render_cell_state(cell, :state_using_another_helper)
     assert_selekt c, "p#stateUsingAnotherHelper", "senseless"
   end
-  
-  
+
+
   def test_application_helper
     cell = HelperUsingCell.new(@controller)
 
@@ -113,7 +113,7 @@ end
 class HelperUsingCell < Cell::Base
 
   helper CellsTestHelper
-  
+
   def state_with_helper_invocation
   end
 
@@ -122,7 +122,7 @@ class HelperUsingCell < Cell::Base
 
   def state_with_helper_method_invocation
   end
-  
+
   def state_using_application_helper
   end
 
@@ -136,9 +136,9 @@ protected
 end
 
 class TwoHelpersIncludingCell < HelperUsingCell
-  
+
   helper AnotherHelper
-  
+
   def state_using_another_helper
   end
 end

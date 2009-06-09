@@ -3,16 +3,16 @@ module Cell
     def self.enabled=(enabled)
       Cell::Base.send(:include, Cell::Caching) if enabled
     end
-    
+
     class NotCacheable < ArgumentException; end
-    
+
     def perform_caching?(state, params={})
       should_cache = self.class.cache_states[state]
       should_cache = should_cache.call(params) if should_cache.is_a? Proc
       return false unless should_cache
       @controller.perform_caching
     end
-    
+
     def render_state_with_caching(state, params={})
       unless perform_caching?(state, params) then return render_state_without_caching(state); end
       begin
@@ -25,16 +25,16 @@ module Cell
          return render_state_without_caching(state)
        end
     end
-    
+
     alias_method_chain :render_state, :caching
-    
+
     private
-    
+
     # The params can be numbers, strings, symbols, or arrays of active records
     def cache_key(cell, state, params)
       Base64.encode64(MD5.new("#{cell}|#{state}|#{recursive_key(params)}").to_s).strip
     end
-    
+
     def recursive_key(hash_or_array)
       hash_or_array = hash_or_array.safe_sort if hash_or_array.is_a? Hash
       hash_or_array.inject([]) do |mem, var|

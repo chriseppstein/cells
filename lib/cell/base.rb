@@ -370,7 +370,7 @@ module Cell
       end
       finder.prepend_view_path paths
     end
-    
+
     # returns a list of subdirectories in order that should be searched under app/cells
     # this is derived from the cell names of the current cell and all
     # its superclasses up to Cell::Base. and then adds 'layouts' and 'shared'.
@@ -388,7 +388,7 @@ module Cell
 
     # To see if the template can be found, make list of possible cells paths, according
     # to:
-    # If Engines loaded: then append paths in order so that more recently started plugins 
+    # If Engines loaded: then append paths in order so that more recently started plugins
     # will take priority and RAILS_ROOT/app/cells with highest prio.
     # Engines not-loaded: then only RAILS_ROOT/app/cells
     def possible_cell_paths

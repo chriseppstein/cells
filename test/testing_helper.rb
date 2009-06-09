@@ -1,5 +1,5 @@
 module CellsTestMethods
-  
+
   def assert_selekt(content, *args)
     assert_select(HTML::Document.new(content).root, *args)
   end
@@ -13,7 +13,7 @@ module CellsTestMethods
     @response.template = new_action_view_template
     @controller.instance_variable_set("@template", @response.template)
   end
-  
+
   def new_action_view_template
     view_class  = Class.new(ActionView::Base)
 
@@ -68,8 +68,8 @@ class CellTestController < ApplicationController
     static += render_cell_to_string("test", "reset_state")
     render :text => static
   end
-  
-  
+
+
   def render_state_with_link_to
     static = render_cell_to_string("test", "state_with_link_to")
     render :text => static

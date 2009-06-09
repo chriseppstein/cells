@@ -18,7 +18,7 @@ class MyTPLHandler
   def render(template, local_assigns={})
     template.source
   end
-  
+
   # We only test whether this MyTPLHandler can render. Don't finalize i.e. compile it.
   def compilable?
     false
@@ -49,7 +49,7 @@ end
 
 class CellContainedInPlugin < Cell::Base
   def some_view
-  end  
+  end
 end
 
 
@@ -57,16 +57,16 @@ end
 class MyTestCell < Cell::Base
   def view_in_local_test_views_dir
   end
-  
+
   def view_with_explicit_english_translation
   end
-  
+
   def view_containing_partial
   end
-  
+
   def view_containing_nonexistant_partial
   end
-  
+
   def view_containing_broken_partial
   end
 end
@@ -156,31 +156,31 @@ class CellsTest < Test::Unit::TestCase
     assert_select "div#AnotherRenderingView>span", "go", :count => 1
 
   end
-  
+
   # test partial rendering ------------------------------------------------------
-  
+
   def test_not_existing_partial
     t = MyTestCell.new(@controller)
     assert_raises ActionView::TemplateError do
       render_cell_state(t, :view_containing_nonexistant_partial)
     end
   end
-  
+
   def test_broken_partial
     t = MyTestCell.new(@controller)
     assert_raises ActionView::TemplateError do
       render_cell_state(t, :view_containing_broken_partial)
     end
   end
-  
+
   def test_render_partial_in_state_view
     t = MyTestCell.new(@controller)
     c = render_cell_state(t, :view_containing_partial)
     assert_selekt c, "#partialContained>#partial"
   end
-  
-  
-  
+
+
+
   # view for :instance_view is provided directly by #view_for_state.
   def test_view_for_state
     t = CellsTestOneCell.new(@controller)
@@ -233,7 +233,7 @@ class CellsTest < Test::Unit::TestCase
     return unless Cell.engines_available?
     Dependencies.log_activity = true
 
-    assert UnknownCell.new(@controller, nil) 
+    assert UnknownCell.new(@controller, nil)
 
 
     assert_kind_of Module, ReallyModule
@@ -248,13 +248,13 @@ class CellsTest < Test::Unit::TestCase
 
     assert_select "#happyStateView"
   end
-  
+
   def test_redirects
     cell = ReallyModule::NestedCell.new(@controller)
-    view = render_cell_state(cell, :unhappy_state)  
+    view = render_cell_state(cell, :unhappy_state)
     assert_match /Written using my own spiffy templating system/, view
   end
-  
+
   def test_render_blank
     cell = ReallyModule::NestedCell.new(@controller)
     assert_nil render_cell_state(cell, :sad_state)
@@ -263,10 +263,10 @@ class CellsTest < Test::Unit::TestCase
   # Thanks to Fran Pena who made us aware of this bug and contributed a patch.
   def test_gettext_support
     ### FIXME: how to set "en" as gettext's default language?
-    
+
     t = MyTestCell.new(@controller)
     c = render_cell_state(t, :view_with_explicit_english_translation)
-    
+
     # the view "view_with_explicit_english_translation_en" exists, check if
     # gettext/rails found it:
     if Object.const_defined?(:GetText)
@@ -276,16 +276,16 @@ class CellsTest < Test::Unit::TestCase
       assert_selekt c, "#defaultTranslation"
     end
   end
-  
-  
+
+
   def test_modified_view_finding_for_testing
-    
-    
+
+
     t = MyTestCell.new(@controller)
     c = render_cell_state(t, :view_in_local_test_views_dir)
     assert_selekt c, "#localView"
   end
-  
+
   ### functional tests: ---------------------------------------------------------
 
   def test_link_to_in_view

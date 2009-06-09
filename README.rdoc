@@ -2,7 +2,7 @@
 
 Cells are like controllers in Rails - they have methods and corresponding views.
 But their big advantage to controllers is their <em>modularity</em>: you can have
-as many cells on a page as you want. That's as if you had multiple controllers in one 
+as many cells on a page as you want. That's as if you had multiple controllers in one
 page, where each "controller" renders only a certain part of the page.
 As if this wasn't enough, cells are superfast and lightweight.
 
@@ -15,7 +15,7 @@ A cell class located in <tt>app/cells/article_cell.rb</tt> could look like this:
 
   class ArticleCell < Cell::Base
     helper :my_formatting_and_escaping_helper   # you can use helpers in cell views!
-    
+
     def show
       @article = if params[:id]
         Article.find(param[:id])
@@ -32,7 +32,7 @@ A cell class located in <tt>app/cells/article_cell.rb</tt> could look like this:
       @articles = Article.recent.all(:limit => limit)
       # no call to render says "render the view named recent.html.[erb|haml|...]".
     end
-    
+
     def top_article
       @article = Article.top_article
       render :state => :show
@@ -57,7 +57,7 @@ The other view could be in <tt>app/cells/article/show.html.haml</tt>:
 You already know that from controllers, don't you? Speaking of controllers, here's
 how you could plug the cells into the page. In <tt>app/controllers/blog_controller.rb</tt>
 there could be an action
-  
+
   class BlogController < ApplicationController
     def top_page
       ...
@@ -65,13 +65,13 @@ there could be an action
   end
 
 where the rendered action's layout could be <tt>app/layouts/blog.html.erb</tt>:
-  
+
   <%= yield %>
-  
+
   <div><%= render_cell(:article, :newest)</div>
   <div><%= render_cell(:article, :top_article)</div>
-    
-The "top page" would consist of the controller action's content, and two additional 
+
+The "top page" would consist of the controller action's content, and two additional
 independent boxes with interesting content. These two boxes are <em>cells</em> and could
 be used on another page, too.
 
@@ -89,7 +89,7 @@ tutorial.
 To install, simply cd to your rails app directory and run
 
   script/plugin install git://github.com/joshuabates/cells.git
-  
+
 Add the following line to your <tt>environment.rb</tt> file:
 
   require File.join(File.dirname(__FILE__), '../vendor/plugins/cells/boot')

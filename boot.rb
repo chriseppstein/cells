@@ -22,7 +22,7 @@ if Cell.engines_available?
   ::Engines.mix_code_from :cells
 end
 
-# initialize Rails::Configuration with our own default values to spare users 
+# initialize Rails::Configuration with our own default values to spare users
 # some hassle with the installation and keep the environment cleaner (stolen from Engines :) )
 
 Rails::Configuration.class_eval do
@@ -39,7 +39,7 @@ Rails::Configuration.class_eval do
   def default_load_paths_with_railsroot_cells
     default_load_paths_without_railsroot_cells.concat([File.join(RAILS_ROOT, Cell::CELL_DIR)])
   end
-  
+
   # Without Engines, ActiveSupport::alias_method_chain isn't available
   # at this point.
   if Cell.engines_available?

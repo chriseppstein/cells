@@ -1,5 +1,5 @@
 # Copyright (c) 2007-2008 Nick Sutterer <apotonick@gmail.com>
-# Copyright (c) 2007-2008 Solide ICT by Peter Bex <peter.bex@solide-ict.nl> 
+# Copyright (c) 2007-2008 Solide ICT by Peter Bex <peter.bex@solide-ict.nl>
 # and Bob Leers <bleers@fastmail.fm>
 # Some portions and ideas stolen ruthlessly from Ezra Zygmuntowicz <ezmobius@gmail.com>
 #

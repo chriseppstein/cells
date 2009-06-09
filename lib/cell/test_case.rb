@@ -19,7 +19,7 @@ module Cell
     setup :setup_controller
 
     @@cell_class = nil
-    
+
     def get(state, params={})
       cell = Cell::Base.create_cell_for(@controller, self.class.cell_class.name.underscore, params)
       @controller.response.body = cell.send(:render_state, state)
@@ -53,7 +53,7 @@ module Cell
       @controller = TestController.new
       @response = @controller.response
     end
-    
+
     class TestController < ActionController::Base
       attr_accessor :request, :response
 

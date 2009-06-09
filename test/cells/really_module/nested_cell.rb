@@ -10,5 +10,5 @@ module ReallyModule
       redirect_to :simple, :two_templates_state
     end
   end
-  
+
 end

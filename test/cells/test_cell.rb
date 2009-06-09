@@ -24,5 +24,5 @@ class TestCell < Cell::Base
 
   def state_with_not_included_helper_method
   end
-  
+
 end
