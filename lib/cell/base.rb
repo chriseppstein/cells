@@ -303,10 +303,10 @@ module Cell
       begin
         # path that is passed to finder.path_and_extension
         action_view_template(state).render(options.merge(:file => state.to_s, :use_full_path => true))
-      rescue ActionView::MissingTemplate
+      rescue ActionView::MissingTemplate => e
         ### TODO: introduce error method.
         if RAILS_ENV == "development"
-          return "ATTENTION: cell view for #{cell_name}##{state} is not readable/existing."
+          return "ATTENTION: cell view for #{cell_name}##{state} is not readable/existing. #{e}"
         elsif RAILS_ENV == "test"
           raise
         else
