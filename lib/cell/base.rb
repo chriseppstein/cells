@@ -209,12 +209,16 @@ module Cell
     # Or to another cell altogether.
     # redirect_to :another_cell, :some_state, :some => :options
     def redirect_to(*arguments)
+      render :text => render_cell(*arguments)
+    end
+
+    def render_cell(*arguments)
       opts = arguments.extract_options!
       if arguments.size < 2
         arguments.unshift cell_name
       end
       arguments << opts
-      render :text => @controller.send(:instance_variable_get, "@template").render_cell(*arguments)
+      @controller.send(:instance_variable_get, "@template").render_cell(*arguments)
     end
 
     include ActionController::Helpers
