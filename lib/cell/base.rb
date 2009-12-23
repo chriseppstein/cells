@@ -152,6 +152,12 @@ module Cell
     class_inheritable_accessor :allow_forgery_protection
     self.allow_forgery_protection = true
 
+    class_inheritable_accessor :template_class
+
+    def self.inherited(sub)
+      sub.template_class = define_template_class(sub)
+    end
+    
 
     def initialize(controller, cell_name=nil, options={})
       @controller = controller
@@ -313,9 +319,13 @@ module Cell
       state = state.to_s
       self.state_name = state
 
-      @state_return_value = send(state)
+      @state_return_value = dispatch_state(state)
 
       render_to_string(state)
+    end
+
+    def dispatch_state(state)
+      send(state)
     end
 
     # Render the view belonging to the given state.  This can be called
@@ -340,19 +350,28 @@ module Cell
 
     def action_view_template(state)
       @views[state.to_s] ||= begin
-        view_class  = Class.new(ActionView::Base)
-
+        view_class = self.class.template_class
         # We cheat a little bit by providing the view class with a known-good views dir
-        returning(view_class.new("#{RAILS_ROOT}/app/views", {}, @controller)) do |action_view|
+        returning(view_class.new(view_class.view_paths, {}, @controller)) do |action_view|
           # Now override the finder in the view_class with our own (we can't use Rails' finder because it's braindead)
-          add_cell_paths_to_finder(action_view.send(:instance_variable_get, '@finder'))
           action_view.send(:instance_variable_set, '@template', action_view)
           action_view.send(:instance_variable_set, '@cell', self)
-          action_view.extend(Cell::View)
           # Make helpers and instance vars available
-          include_helpers_in_class(view_class)
+          include_helpers_in_class(action_view.class)
           clone_ivars_to(action_view)
         end
+      end
+    end
+
+    def self.define_template_class(sub)
+      returning(Class.new(Cell::View)) do |view_class|
+        view_class.view_paths = ActionController::Base.view_paths.dup
+        sub.add_cell_paths(view_class)
+        view_class.send(:include, Module.new do
+          def _copy_ivars_from_controller
+            # we don't want this behavior.
+          end
+        end)
       end
     end
 
@@ -410,7 +429,7 @@ module Cell
       "#{cell_name}#{NAME_SUFFIX}".classify.constantize
     end
 
-    def add_cell_paths_to_finder(finder)
+    def self.add_cell_paths(view_class)
       paths = []
       possible_cell_paths.each do |cell_path|
         possible_cell_subdirectories.each do |subdir|
@@ -418,21 +437,19 @@ module Cell
         end
         paths << cell_path
       end
-      finder.prepend_view_path paths
+      view_class.view_paths.unshift(*paths)
     end
 
     # returns a list of subdirectories in order that should be searched under app/cells
     # this is derived from the cell names of the current cell and all
     # its superclasses up to Cell::Base. and then adds 'layouts' and 'shared'.
-    def possible_cell_subdirectories
-      @possible_cell_subdirectories ||= begin
-        resolve_cell = self.class
-        subdirs = []
+    def self.possible_cell_subdirectories
+      resolve_cell = self
+      returning([]) do |subdirs|
         while resolve_cell != Cell::Base
           subdirs << resolve_cell.to_s.underscore[0..-6]
           resolve_cell = resolve_cell.superclass
         end
-        subdirs + ["shared"]
       end
     end
 
@@ -441,12 +458,10 @@ module Cell
     # If Engines loaded: then append paths in order so that more recently started plugins
     # will take priority and RAILS_ROOT/app/cells with highest prio.
     # Engines not-loaded: then only RAILS_ROOT/app/cells
-    def possible_cell_paths
-      if Cell.engines_available?
-        Rails.plugins.by_precedence.map {|plugin| File.join(plugin.directory, Cell::CELL_DIR)}.unshift(File.join(RAILS_ROOT, Cell::CELL_DIR))
-      else
-        [File.join(RAILS_ROOT, Cell::CELL_DIR)]
-      end
+    def self.possible_cell_paths
+      paths = Dir.glob("#{RAILS_ROOT}/vendor/plugins/*/#{Cell::CELL_DIR}")
+      paths.unshift(File.join(RAILS_ROOT, Cell::CELL_DIR))
+      paths.flatten
     end
 
     # When passed a copy of the ActionView::Base class, it
