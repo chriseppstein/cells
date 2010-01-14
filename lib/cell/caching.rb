@@ -14,10 +14,14 @@ module Cell
       unless perform_caching?(state, params.merge(:state => state)) then return render_state_without_caching(state); end
       begin
         key = cache_key(self.class.name, state, params)
-        cache = @controller.read_fragment(key)
+        
+        cache = @controller.read_fragment(key)        
         return cache unless cache.blank?
-        @controller.write_fragment(key, render_state_without_caching(state))
-      rescue Cell::Caching::NotCacheable
+        
+        @controller.write_fragment(key, render_state_without_caching(state), self.class.cache_options)
+        return @controller.read_fragment(key)
+        
+      rescue Cell::Caching::NotCacheable        
         Rails.logger.info("Warning: Can't cache: #{state} with params: #{params.inspect}")
         return render_state_without_caching(state)
       end
@@ -26,13 +30,13 @@ module Cell
     private
     
     def perform_caching?(state, params={})
-      return false if perform_caching_for_state?(:none, params)
-      return false unless perform_caching_for_state?(state, params) || perform_caching_for_state?(:all, params)
+      return false        if perform_caching_for_state?(:none, params)
+      return false    unless perform_caching_for_state?(state, params) || perform_caching_for_state?(:all, params)
       @controller.perform_caching
     end
     
     def perform_caching_for_state?(state, params)
-      should_cache = self.class.cache_states[state]
+      should_cache = self.class.cache_states && self.class.cache_states[state]
       should_cache.is_a?(Proc) ? should_cache.call(params) : should_cache
     end
 

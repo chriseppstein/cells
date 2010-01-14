@@ -271,10 +271,12 @@ module Cell
     end
 
     class_inheritable_accessor :cache_states
-
+    class_inheritable_accessor :cache_options
+    
     def self.caches(*states)
       options = states.extract_options!
       self.cache_states ||= {}
+      self.cache_options = options.reject { |k,v| [:if,:except].include?(k) }
       states.inject(cache_states) do |mem, var|
         mem[var] = case
           when options[:if] then options[:if]
@@ -365,7 +367,7 @@ module Cell
 
     def self.define_template_class(sub)
       returning(Class.new(Cell::View)) do |view_class|
-        view_class.view_paths = ActionController::Base.view_paths.dup
+        view_class.view_paths = ActionView::Base.process_view_paths([File.join(RAILS_ROOT, 'app', 'views')])
         sub.add_cell_paths(view_class)
         view_class.send(:include, Module.new do
           def _copy_ivars_from_controller
@@ -459,9 +461,11 @@ module Cell
     # will take priority and RAILS_ROOT/app/cells with highest prio.
     # Engines not-loaded: then only RAILS_ROOT/app/cells
     def self.possible_cell_paths
-      paths = Dir.glob("#{RAILS_ROOT}/vendor/plugins/*/#{Cell::CELL_DIR}")
-      paths.unshift(File.join(RAILS_ROOT, Cell::CELL_DIR))
-      paths.flatten
+      if Cell.engines_available?
+        Rails.plugins.by_precedence.map {|plugin| File.join(plugin.directory, Cell::CELL_DIR)}.unshift(File.join(RAILS_ROOT, Cell::CELL_DIR))
+      else
+        [File.join(RAILS_ROOT, Cell::CELL_DIR)]
+      end
     end
 
     # When passed a copy of the ActionView::Base class, it
