@@ -156,6 +156,8 @@ module Cell
 
     def self.inherited(sub)
       sub.template_class = define_template_class(sub)
+      sub.cache_states = self.cache_states
+      sub.cache_options = self.cache_options
     end
     
 
@@ -276,6 +278,7 @@ module Cell
     def self.caches(*states)
       options = states.extract_options!
       self.cache_states ||= {}
+      self.cache_options ||= {}
       self.cache_options = options.reject { |k,v| [:if,:except].include?(k) }
       states.inject(cache_states) do |mem, var|
         mem[var] = case

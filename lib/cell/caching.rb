@@ -42,7 +42,7 @@ module Cell
 
     # The params can be numbers, strings, symbols, or arrays of active records
     def cache_key(cell, state, params)
-      Base64.encode64(MD5.new("#{cell}|#{state}|#{recursive_key(params)}").to_s).strip
+      "#{cell}|#{state}|"+Base64.encode64(MD5.new(recursive_key(params)).to_s).strip
     end
 
     def recursive_key(hash_or_array)
