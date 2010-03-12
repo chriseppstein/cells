@@ -156,8 +156,8 @@ module Cell
 
     def self.inherited(sub)
       sub.template_class = define_template_class(sub)
-      sub.cache_states = self.cache_states
-      sub.cache_options = self.cache_options
+      (sub.cache_states ||= {}).merge!(self.cache_states) unless self.cache_states.nil?
+      (sub.cache_options ||= {}).merge!(self.cache_options) unless self.cache_states.nil?
     end
     
 
@@ -370,7 +370,7 @@ module Cell
 
     def self.define_template_class(sub)
       returning(Class.new(Cell::View)) do |view_class|
-        view_class.view_paths = ActionView::Base.process_view_paths([File.join(RAILS_ROOT, 'app', 'views')])
+        view_class.view_paths = ActionController::Base.view_paths.dup
         sub.add_cell_paths(view_class)
         view_class.send(:include, Module.new do
           def _copy_ivars_from_controller
@@ -464,11 +464,9 @@ module Cell
     # will take priority and RAILS_ROOT/app/cells with highest prio.
     # Engines not-loaded: then only RAILS_ROOT/app/cells
     def self.possible_cell_paths
-      if Cell.engines_available?
-        Rails.plugins.by_precedence.map {|plugin| File.join(plugin.directory, Cell::CELL_DIR)}.unshift(File.join(RAILS_ROOT, Cell::CELL_DIR))
-      else
-        [File.join(RAILS_ROOT, Cell::CELL_DIR)]
-      end
+      paths = Dir.glob("#{RAILS_ROOT}/vendor/plugins/*/#{Cell::CELL_DIR}")
+      paths.unshift(File.join(RAILS_ROOT, Cell::CELL_DIR))
+      paths.flatten
     end
 
     # When passed a copy of the ActionView::Base class, it
